@@ -244,6 +244,17 @@ int Trill::rawDataRead() {
 	return result;
 }
 
+/* read status byte at offset 3 */
+uint8_t Trill::statusRead() {
+	prepareForStatusRead();
+	uint8_t statusByte = 0;
+
+	wire_->requestFrom(i2c_address_, 1);
+
+	statusByte = wire_->read();
+	return statusByte;
+}
+
 /* Scan configuration settings */
 void Trill::setMode(Mode mode) {
 	wire_->beginTransmission(i2c_address_);
@@ -326,6 +337,16 @@ void Trill::setAutoScanInterval(uint16_t interval) {
 	last_read_loc_ = kOffsetCommand;
 }
 
+void Trill::setScanTrigger(uint8_t trigger) {
+	wire_->beginTransmission(i2c_address_);
+	wire_->write(kOffsetCommand);
+	wire_->write(kCommandScanTrigger);
+	wire_->write(trigger);
+	wire_->endTransmission();
+
+	last_read_loc_ = kOffsetCommand;
+}
+
 /* Prepare the device to read data if it is not already prepared */
 void Trill::prepareForDataRead() {
 	if(last_read_loc_ != kOffsetData) {
@@ -334,6 +355,17 @@ void Trill::prepareForDataRead() {
 		wire_->endTransmission();
 
 		last_read_loc_ = kOffsetData;
+	}
+}
+
+/* Prepare the device to read status if it is not already prepared */
+void Trill::prepareForStatusRead() {
+	if(last_read_loc_ != kOffsetStatus) {
+		wire_->beginTransmission(i2c_address_);
+		wire_->write(kOffsetStatus);
+		wire_->endTransmission();
+
+		last_read_loc_ = kOffsetStatus;
 	}
 }
 

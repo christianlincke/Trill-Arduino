@@ -187,6 +187,7 @@ class Trill : public Touches2D
 		boolean requestRawData(uint8_t max_length = 0xFF);
 		int rawDataAvailable();
 		int rawDataRead();
+		uint8_t statusRead();
 
 		/* --- Scan configuration settings --- */
 		void setMode(Mode mode);
@@ -196,9 +197,11 @@ class Trill : public Touches2D
 		void setIDACValue(uint8_t value);
 		void setMinimumTouchSize(uint16_t size);
 		void setAutoScanInterval(uint16_t interval);
+		void setScanTrigger(uint8_t trigger);
 
 	private:
 		void prepareForDataRead();
+		void prepareForStatusRead();
 
 		enum {
 			kCommandNone = 0,
@@ -209,12 +212,14 @@ class Trill : public Touches2D
 			kCommandIdac = 5,
 			kCommandBaselineUpdate = 6,
 			kCommandMinimumSize = 7,
-			kCommandAutoScanInterval = 16,
+			kCommandAutoScanInterval = 14,
+			kCommandScanTrigger = 15,
 			kCommandIdentify = 255
 		};
 
 		enum {
 			kOffsetCommand = 0,
+			kOffsetStatus = 3,
 			kOffsetData = 4
 		};
 
