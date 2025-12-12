@@ -347,6 +347,17 @@ void Trill::setScanTrigger(uint8_t trigger) {
 	last_read_loc_ = kOffsetCommand;
 }
 
+void Trill::setFormat(uint8_t num_bits, uint8_t shift) {
+	wire_->beginTransmission(i2c_address_);
+	wire_->write(kOffsetCommand);
+	wire_->write(kCommandFormat);
+	wire_->write(num_bits);
+	wire_->write(shift);
+	wire_->endTransmission();
+
+	last_read_loc_ = kOffsetCommand;
+}
+
 /* Prepare the device to read data if it is not already prepared */
 void Trill::prepareForDataRead() {
 	if(last_read_loc_ != kOffsetData) {

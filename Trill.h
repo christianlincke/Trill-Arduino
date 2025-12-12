@@ -198,6 +198,7 @@ class Trill : public Touches2D
 		void setMinimumTouchSize(uint16_t size);
 		void setAutoScanInterval(uint16_t interval);
 		void setScanTrigger(uint8_t trigger);
+		void setFormat(uint8_t num_bits, uint8_t shift);
 
 	private:
 		void prepareForDataRead();
@@ -212,6 +213,7 @@ class Trill : public Touches2D
 			kCommandIdac = 5,
 			kCommandBaselineUpdate = 6,
 			kCommandMinimumSize = 7,
+			kCommandFormat = 13,
 			kCommandAutoScanInterval = 14,
 			kCommandScanTrigger = 15,
 			kCommandIdentify = 255
