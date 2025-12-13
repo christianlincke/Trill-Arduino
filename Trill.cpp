@@ -16,12 +16,12 @@
 #endif // BUFFER_LENGTH
 
 #define MAX_TOUCH_1D_OR_2D (((device_type_ == TRILL_SQUARE || device_type_ == TRILL_HEX) ? kMaxTouchNum2D : kMaxTouchNum1D))
-#define RAW_LENGTH ((device_type_ == TRILL_BAR ? 2 * kNumChannelsBar \
+#define RAW_LENGTH ((device_type_ == TRILL_BAR ? length_data_ * num_active_channels_ \
 			: device_type_ == TRILL_RING ? 2 * kNumChannelsRing \
 			: 2 * kNumChannelsMax))
 
 Trill::Trill()
-: wire_(&Wire), device_type_(TRILL_NONE), mode_(AUTO),
+: wire_(&Wire), device_type_(TRILL_NONE), mode_(AUTO), format_(16), num_active_channels_(30), length_data_(2),
   firmware_version_(0), last_read_loc_(0xFF), raw_bytes_left_(0)
 {
 }
@@ -239,6 +239,9 @@ int Trill::rawDataRead() {
 			return 0;
 	}
 
+	if (format_ == 8) {
+		return ((int)wire_->read());
+	}
 	int result = ((uint8_t)wire_->read()) << 8;
 	result += (int)wire_->read();
 	return result;
@@ -348,11 +351,42 @@ void Trill::setScanTrigger(uint8_t trigger) {
 }
 
 void Trill::setFormat(uint8_t num_bits, uint8_t shift) {
+	if (num_bits != 8 || num_bits != 16) {
+		return; // wrong format
+	}
+	format_ = num_bits;
+	length_data_ = num_bits / 8;
 	wire_->beginTransmission(i2c_address_);
 	wire_->write(kOffsetCommand);
 	wire_->write(kCommandFormat);
 	wire_->write(num_bits);
 	wire_->write(shift);
+	wire_->endTransmission();
+
+	last_read_loc_ = kOffsetCommand;
+}
+
+void Trill:: setChannelMask(uint32_t mask, uint8_t numActiveChannels) {
+	uint8_t b0 = (mask >> 0)  & 0xFF;  // least significant byte
+  	uint8_t b1 = (mask >> 8)  & 0xFF;
+  	uint8_t b2 = (mask >> 16) & 0xFF;
+  	uint8_t b3 = (mask >> 24) & 0xFF;  // most significant byte
+	num_active_channels_ = numActiveChannels;
+	
+	wire_->beginTransmission(i2c_address_);
+	wire_->write(kOffsetCommand);
+	wire_->write(kCommandChannelMaskLow);
+	wire_->write(b0);
+	wire_->write(b1);
+	wire_->endTransmission();
+
+	delay(interCommandDelay);
+
+	wire_->beginTransmission(i2c_address_);
+	wire_->write(kOffsetCommand);
+	wire_->write(kCommandChannelMaskHigh);
+	wire_->write(b2);
+	wire_->write(b3);
 	wire_->endTransmission();
 
 	last_read_loc_ = kOffsetCommand;

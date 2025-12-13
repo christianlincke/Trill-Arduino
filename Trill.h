@@ -199,7 +199,7 @@ class Trill : public Touches2D
 		void setAutoScanInterval(uint16_t interval);
 		void setScanTrigger(uint8_t trigger);
 		void setFormat(uint8_t num_bits, uint8_t shift);
-
+		void setChannelMask(uint32_t mask, uint8_t numActiveChannels);
 	private:
 		void prepareForDataRead();
 		void prepareForStatusRead();
@@ -213,6 +213,8 @@ class Trill : public Touches2D
 			kCommandIdac = 5,
 			kCommandBaselineUpdate = 6,
 			kCommandMinimumSize = 7,
+			kCommandChannelMaskLow = 10,
+			kCommandChannelMaskHigh = 11,
 			kCommandFormat = 13,
 			kCommandAutoScanInterval = 14,
 			kCommandScanTrigger = 15,
@@ -252,6 +254,9 @@ class Trill : public Touches2D
 
 		Device device_type_;	/* Which type of device is connected, if any */
 		Mode mode_;			/* Which mode the device is in */
+		uint8_t format_; /* which format the data ist stored in (8 or 16 bit)*/
+		uint8_t num_active_channels_; /* how many sensor channels are active */
+		uint8_t length_data_; /* how many bytes per data sensor channel*/
 		uint8_t firmware_version_;	/* Firmware version running on the device */
 		uint8_t last_read_loc_;	/* Which byte reads will begin from on the device */
 		uint8_t raw_bytes_left_; /* How many bytes still remaining to request? */
